@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score, StratifiedKFold
 import matplotlib.pyplot as plt
+import shap.plots
 
 # Load dataset
 df = pd.read_csv('model/datasets/final_csv/flags_and_crash_data.csv')
@@ -25,7 +26,7 @@ print(f"Average CV AUC: {aucs.mean():.4f}")
 rf.fit(X, y)
 
 # SHAP
-X_sample = X.sample(400, random_state=42)  # smaller sample for speed
+X_sample = X.sample(400, random_state=42)
 explainer = shap.TreeExplainer(rf)
 shap_values = explainer.shap_values(X_sample)
 
@@ -58,6 +59,62 @@ plt.title('Feature Importance from SHAP Values')
 plt.gca().invert_yaxis()
 plt.tight_layout()
 plt.show()
+
+
+# waterfall plot
+pred_probs = rf.predict_proba(X_sample)[:, 1]
+sample_idx_1 = np.argmax(pred_probs)
+
+shap.plots.waterfall(
+    shap.Explanation(
+        values=shap_values[sample_idx_1, :, 1], 
+        base_values=explainer.expected_value[1],
+        data=X_sample.iloc[sample_idx_1],
+        feature_names=X_sample.columns
+    ),
+    max_display=len(X_sample.columns)
+)
+plt.show()
+
+sample_idx_mid = np.argmax(0.5)
+shap.plots.waterfall(
+    shap.Explanation(
+        values=shap_values[sample_idx_mid, :, 1], 
+        base_values=explainer.expected_value[1],
+        data=X_sample.iloc[sample_idx_mid],
+        feature_names=X_sample.columns
+    ),
+    max_display=len(X_sample.columns)
+)
+plt.show()
+
+sample_idx_0 = np.argmax(0)
+shap.plots.waterfall(
+    shap.Explanation(
+        values=shap_values[sample_idx_0, :, 1], 
+        base_values=explainer.expected_value[1],
+        data=X_sample.iloc[sample_idx_0],
+        feature_names=X_sample.columns
+    ),
+    max_display=len(X_sample.columns)
+)
+plt.show()
+
+
+# SHAP dependence plot
+top_feature = top_features[0]
+shap_values_class1 = shap_values[:, :, 1]
+
+for feature in X_sample.columns:
+    shap.dependence_plot(
+        feature,
+        shap_values[:, :, 1],
+        X_sample,
+        show=True
+    )
+    plt.tight_layout()
+    plt.show()
+
 
 # Run on top features
 shap_interaction_values = explainer.shap_interaction_values(X_top)
@@ -109,5 +166,5 @@ shap.summary_plot(
     feature_names=X_top.columns.tolist(),
     show=True
 )
-
+plt.show()
 
