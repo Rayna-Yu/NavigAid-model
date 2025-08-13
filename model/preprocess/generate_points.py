@@ -1,17 +1,10 @@
 import osmnx as ox
 import geopandas as gpd
-from shapely.geometry import Point, LineString
+from shapely.geometry import LineString
 
-# Get the street network graph for Boston (walkable network)
 G = ox.graph_from_place('Boston, Massachusetts, USA', network_type='walk')
-
-# Convert graph edges to a GeoDataFrame
 edges = ox.graph_to_gdfs(G, nodes=False, edges=True)
-
-# Drop duplicate geometries to reduce oversampling
 edges = edges.drop_duplicates(subset='geometry')
-
-# Convert edges to a metric CRS (meters) - UTM zone 19N for Boston
 edges = edges.to_crs(epsg=32619)
 
 def sample_points_along_line(line: LineString, distance: float):
@@ -38,13 +31,12 @@ for idx, row in edges.iterrows():
     total_points += len(points)
     sampled_points.extend(points)
 
-# Create GeoDataFrame
 gdf_points = gpd.GeoDataFrame(geometry=sampled_points, crs='EPSG:32619')
 gdf_points = gdf_points.to_crs(epsg=4326)
 
-# Randomly sample 100,000 points (without replacement)
-if len(gdf_points) > 100000:
-    gdf_points = gdf_points.sample(n=100000, random_state=42).reset_index(drop=True)
+# Randomly sample 200,000 points (without replacement)
+if len(gdf_points) > 300000:
+    gdf_points = gdf_points.sample(n=300000, random_state=42).reset_index(drop=True)
 
 # Save
 gdf_points.to_file("model/datasets/sample/boston_sampled_points.geojson", driver='GeoJSON')
