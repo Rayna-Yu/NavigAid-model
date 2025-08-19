@@ -35,7 +35,7 @@ def _handle_continuous(points_gdf, datasets, buffer_m):
         lambda pt: nearby_feature_value(pt,  datasets['lamps'], buffer_m)
     )
 
-    # No sidewalk
+    # has crosswalk
     points_gdf['has_crosswalk'] = points_gdf.geometry.apply(
         lambda pt: nearby_feature_value(pt, datasets['crosswalk'], buffer_m)
     )

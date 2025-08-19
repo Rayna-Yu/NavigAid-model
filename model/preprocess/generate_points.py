@@ -34,7 +34,7 @@ for idx, row in edges.iterrows():
 gdf_points = gpd.GeoDataFrame(geometry=sampled_points, crs='EPSG:32619')
 gdf_points = gdf_points.to_crs(epsg=4326)
 
-# Randomly sample 200,000 points (without replacement)
+# Randomly sample 300,000 points (without replacement)
 if len(gdf_points) > 300000:
     gdf_points = gdf_points.sample(n=300000, random_state=42).reset_index(drop=True)
 
