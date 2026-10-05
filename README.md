@@ -23,20 +23,35 @@ Paper: *NavigAid: A Route Analysis and Navigation Model for Pedestrian Safety Us
 - **Model:** scikit-learn `RandomForestClassifier` (300 trees, `random_state=42`) with isotonic calibration on a held-out calibration split, so `predict_proba` outputs can be used as crash probabilities. Split: 80/20 train/hold-out, then 80/20 base/calibration within train.
 - **Other models compared:** logistic regression (plain, degree-2, lasso), SVM, and gradient boosting.
 
-## Results (hold-out set, class-balanced)
+## Results (random hold-out split, class-balanced)
+
+- Speed limit is the strongest predictor in both models, matching prior crash research. Sidewalk condition, slope, and width follow close behind. Crosswalk coverage also contributes positively to predicted risk, likely because it reflects pedestrian exposure.
+- Ramps, lighting, and tree coverage have the smallest effects.
+
+### Feature importance
+
+| Day | Night |
+| --- | --- |
+| ![Day feature importance](results/day/feature_importance.png) | ![Night feature importance](results/night/feature_importance.png) |
+
+Gini importance from the random forest.
+
+### Metrics
+
+Hold-out metrics (random split, so likely optimistic):
 
 | | Day | Night |
 | --- | --- | --- |
 | Accuracy | 0.965 | 0.969 |
 | ROC AUC | 0.991 | 0.994 |
-| Average precision | 0.988 | 0.993 |
 | Brier score (uncalibrated → calibrated) | 0.043 → 0.024 | 0.044 → 0.028 |
 
-- Speed limit is the strongest predictor in both models, matching prior crash research. Crosswalk coverage also contributes positively to predicted risk, likely because it reflects pedestrian exposure.
-- Lighting and tree coverage have the smallest effects.
-- Metrics are on balanced data, so they don't reflect real-world crash base rates, and the features are presence/proximity proxies rather than direct measurements of safety.
+### Limitations
 
-Plots (calibration, ROC, confusion matrices, SHAP, permutation importance, learning curves) are described in the paper.
+- Metrics are on balanced data, so they may not reflect real-world crash base rates.
+- The hold-out is a random split, so nearby points with near-identical features can land in both train and test. Spatial cross-validation is future work.
+
+Other plots (ROC, calibration, confusion matrices, learning curves, partial dependence, etc.) are in [`results/`](results/) and discussed in the paper.
 
 ## Repo layout
 
